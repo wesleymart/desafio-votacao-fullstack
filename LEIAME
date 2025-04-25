@@ -1,0 +1,9 @@
+Para facilitar a criação do banco de dados eu criei uma imagem do PostgreSQL personalizada com toda a estrutura já pronta e deixei disponivel no Docker Hub para poder baixar. Tambeḿ crei o arquivo docker-compose.yml que cria o container e deixa ele pronto para o uso.
+
+Para criar o banco de dados será necessário executar o docker-compose dentro da pasta "postegreSQL14" com o comando: "sudo docker-compose up -d".
+
+Para isso o recomendado é estar em um computador com sistema operacional Linux.
+
+Também será necessário ter instalado o docker na versão 27.0 e o docker-compose na versão 1.25.4.
+
+Se a versão do docker compose foi mais atualizada pode ser necessário executar o comando: "sudo docker-compose up -d" sem o "-" entre as palavras docker e compose 
