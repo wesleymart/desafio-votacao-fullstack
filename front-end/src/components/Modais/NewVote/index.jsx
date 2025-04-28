@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Modal, Form, Input } from "antd";
 import InputMask from 'react-input-mask';
 
-const NewVote = ({ visible, onCreate, onCancel }) => {
+const NewVote = ({ visible, continueVote, onCancel, setAssociateCpf }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const NewVote = ({ visible, onCreate, onCancel }) => {
         form={form}
         layout="vertical"
         onFinish={(values) => {
-          onCreate(values);
+          continueVote(values.associatedCpf);
           form.resetFields();
         }}
       >

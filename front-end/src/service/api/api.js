@@ -39,8 +39,18 @@ class ApiService {
       },
     });
   }
+
+  registerAssociate(associate) {
+    return this.api.post(`/api/associated`, associate, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+  
+
 }
 
-const apiService = new ApiService("http://localhost:8080"); // Substitua pela URL da sua API
+const apiService = new ApiService("http://localhost:8080");
 
 export default apiService;

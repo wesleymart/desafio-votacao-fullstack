@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Card, Spin, Space, Button, Tooltip, message, Badge, Modal, Divider } from "antd";
+import { Card, Spin, Space, Button, Tooltip, message, Badge, Modal, Divider, Pagination } from "antd";
 import { CheckOutlined, CloseOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import "./AllDiscuss.css";
 import apiService from "../../service/api/api";
 import DiscussModal from "../../components/Modais/CreateNewDiscuss";
 import NewVote from "../../components/Modais/NewVote";
+import Associate from "../../components/Modais/Associate"
 import { enumStatusMap } from "../../service/api/util/EnumStatus";
 
 const AllDiscuss = () => {
@@ -14,12 +15,18 @@ const AllDiscuss = () => {
   const [voteValue, setVoteValue] = useState(null);
   const [discussId, setDiscussId] = useState();
   const [isVoteVisible, setIsVoteVisible] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchStatus, setSearchStatus] = useState(0);
   const [totalDiscusses, setTotalDiscusses] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [isAssociateModalVisible, setIsAssociateModalVisible] = useState(false);
+  const [associateName, setAssociateName] = useState("");
+  const [associateCpf, setAssociateCpf] = useState("");
+  const [pendingVoteValues, setPendingVoteValues] = useState(null);
+
 
   useEffect(() => {
-    fetchDiscusses(currentPage, searchStatus);
+    fetchDiscusses(currentPage - 1, searchStatus);
   }, [currentPage, searchStatus]);
 
   const fetchDiscusses = async (page, status) => {
@@ -55,9 +62,48 @@ const AllDiscuss = () => {
     });
   };
 
-  const handleAddVote = async (values) => {
+
+  const handleAssociateRegister = async (values) => {
+    if (!values.associateCpf.trim()) {
+      message.warning("Preencha o campo de cpf corretamente");
+      return;
+    }
+
+    try {
+      await apiService.registerAssociate({ name: associateName, cpf: values.associateCpf.replace(/\D/g, "") });
+      message.success("Associado cadastrado com sucesso!");
+
+      if (pendingVoteValues) {
+        await continueVote(values.associateCpf);
+      }
+      setIsAssociateModalVisible(false);
+      setIsVoteVisible(false);
+    } catch (error) {
+      message.error("Erro ao cadastrar associado");
+    }
+  };
+
+  const handleAddVote = async (value, id) => {
+    Modal.confirm({
+      title: "Você já é um associado?",
+      okText: "Sim",
+      cancelText: "Não",
+      onOk: async () => {
+        handleVote(value, id)
+      },
+      onCancel: () => {
+        setVoteValue(value);
+        setDiscussId(id);
+        setAssociateCpf(value);
+        setIsAssociateModalVisible(true);
+        setPendingVoteValues(value);
+      },
+    });
+  };
+
+  const continueVote = async (associatedCpf) => {
     const vote = {
-      associatedCpf: values.associatedCpf.replace(/\D/g, ""),
+      associatedCpf: associatedCpf !== "" ? associatedCpf.replace(/\D/g, "") : associateCpf.replace(/\D/g, ""),
       vote: voteValue,
       discussId,
     };
@@ -69,9 +115,10 @@ const AllDiscuss = () => {
         CPF_ALREADY_VOTED: () => message.warning("Você já votou"),
         UNABLE_TO_VOTE: () => message.error("Você não está habilitado a votar"),
         CPF_INVALID: () => message.error("CPF inválido"),
+        ASSOCIATED_NOT_REGISTERED: () => message.error("Associado não cadastrado"),
       };
-      (messages[responseData] || (() => {}))();
-      await fetchDiscusses(currentPage, 0);
+      (messages[responseData] || (() => { }))();
+      await fetchDiscusses(currentPage -1 , 0);
       setIsVoteVisible(false);
     } catch (error) {
       message.error("Erro ao votar na pauta");
@@ -110,7 +157,7 @@ const AllDiscuss = () => {
             shape="circle"
             icon={<CheckOutlined />}
             disabled={isVoteDisabled}
-            onClick={() => handleVote("sim", rowData.id)}
+            onClick={() => handleAddVote("sim", rowData.id)}
           />
           {isVoteDisabled && <span style={{ marginLeft: 8 }}>{rowData.totalVotesYes}</span>}
         </Tooltip>
@@ -119,7 +166,7 @@ const AllDiscuss = () => {
             shape="circle"
             icon={<CloseOutlined />}
             disabled={isVoteDisabled}
-            onClick={() => handleVote("não", rowData.id)}
+            onClick={() => handleAddVote("não", rowData.id)}
           />
           {isVoteDisabled && <span style={{ marginLeft: 8 }}>{rowData.totalVotesNo}</span>}
         </Tooltip>
@@ -138,78 +185,89 @@ const AllDiscuss = () => {
   };
 
   return (
-    <div className="container" style={{ minHeight: "100vh", padding: "20px" , backgroundColor: "#fff" }}>
+    <div className="container" style={{ minHeight: "100vh", padding: "20px", backgroundColor: "#fff" }}>
       <Card
         title="Pautas"
         className="card"
         headStyle={{ backgroundImage: "linear-gradient(90deg, #003366 0%, #0050b3 100%)", color: "white", borderTopLeftRadius: "12px", borderTopRightRadius: "12px" }}
         extra={
-            <Button
-              icon={<PlusOutlined />}
-              type="primary"
-              style={{  backgroundImage: "linear-gradient(90deg, #003366 0%, #0050b3 100%)", borderRadius: '12px' }}
-              onClick={() => setIsModalVisible(true)}
-            >
-              Nova Pauta
-            </Button>
-          }
+          <Button
+            icon={<PlusOutlined />}
+            type="primary"
+            style={{ backgroundImage: "linear-gradient(90deg, #003366 0%, #0050b3 100%)", borderRadius: '12px' }}
+            onClick={() => setIsModalVisible(true)}
+          >
+            Nova Pauta
+          </Button>
+        }
       >
         {loading ? (
           <Spin />
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "20px",
-              paddingBottom: "20px",
-            }}
-          >
-            {data.map((pauta) => (
-              <Card
-                key={pauta.id}
-                hoverable
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  padding: "15px",
-                  boxSizing: "border-box",
-                  position: "relative",
-                  transition: "transform 0.3s ease",
-                  backgroundColor: "#e6f3fb",
-                }}
-              >
-                <div
+          <>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                gap: "20px",
+                paddingBottom: "20px",
+              }}
+            >
+              {data.map((pauta) => (
+                <Card
+                  key={pauta.id}
+                  hoverable
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "20px",
+                    width: "100%",
+                    height: "100%",
+                    padding: "15px",
+                    boxSizing: "border-box",
+                    position: "relative",
+                    transition: "transform 0.3s ease",
+                    backgroundColor: "#e6f3fb",
                   }}
                 >
-                  <h2 style={{ fontWeight: "bold", fontSize: "clamp(16px, 2vw, 18px)", margin: 0 }}>{pauta.name}</h2>
-                  <div style={{ marginLeft: "20px" }}>{circleStatus(pauta.session?.status)}</div>
-                </div>
-                <Divider style={{ margin: "12px 0" }} />
-                <div style={{ marginBottom: "20px" }}>
-                  <h3 style={{ fontSize: "clamp(14px, 1.5vw, 16px)", margin: 0 }}>{pauta.description}</h3>
-                </div>
-                {renderVoteButtons(pauta)}
-                <Button
-                  type="text"
-                  icon={<DeleteOutlined style={{ color: "#ff4d4f", fontSize: "20px" }} />}
-                  onClick={() => deleteDiscuss(pauta.id)}
-                  style={{
-                    position: "absolute",
-                    bottom: "10px",
-                    right: "10px",
-                    background: "transparent",
-                    border: "none",
-                  }}
-                />
-              </Card>
-            ))}
-          </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    <h2 style={{ fontWeight: "bold", fontSize: "clamp(16px, 2vw, 18px)", margin: 0 }}>{pauta.name}</h2>
+                    <div style={{ marginLeft: "20px" }}>{circleStatus(pauta.session?.status)}</div>
+                  </div>
+                  <Divider style={{ margin: "12px 0" }} />
+                  <div style={{ marginBottom: "20px" }}>
+                    <h3 style={{ fontSize: "clamp(14px, 1.5vw, 16px)", margin: 0 }}>{pauta.description}</h3>
+                  </div>
+                  {renderVoteButtons(pauta)}
+                  <Button
+                    type="text"
+                    icon={<DeleteOutlined style={{ color: "#ff4d4f", fontSize: "20px" }} />}
+                    onClick={() => deleteDiscuss(pauta.id)}
+                    style={{
+                      position: "absolute",
+                      bottom: "10px",
+                      right: "10px",
+                      background: "transparent",
+                      border: "none",
+                    }}
+                  />
+                </Card>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={totalDiscusses}
+                onChange={(page, pageSize) => setCurrentPage(page)}
+                showSizeChanger={false}
+              />
+            </div>
+          </>
         )}
       </Card>
 
@@ -219,11 +277,27 @@ const AllDiscuss = () => {
         onCancel={() => setIsModalVisible(false)}
       />
 
+      {isAssociateModalVisible && (
+        <Associate
+          setAssociateCpf={setAssociateCpf}
+          associateCpf={associateCpf}
+          message={message}
+          setIsVoteVisible={setIsVoteVisible}
+          handleAssociateRegister={handleAssociateRegister}
+          associateName={associateName}
+          setAssociateName={setAssociateName}
+          setIsAssociateModalVisible={setIsAssociateModalVisible}
+          isAssociateModalVisible={isAssociateModalVisible}
+        
+        />
+      )}
+
       {isVoteVisible && (
         <NewVote
-          onCreate={handleAddVote}
+          continueVote={continueVote}
           visible={isVoteVisible}
           onCancel={() => setIsVoteVisible(false)}
+          setAssociateCpf={setAssociateCpf}
         />
       )}
     </div>

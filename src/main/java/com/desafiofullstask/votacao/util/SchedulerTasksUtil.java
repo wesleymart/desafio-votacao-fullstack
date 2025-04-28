@@ -24,6 +24,10 @@ public class SchedulerTasksUtil {
     @Autowired
     private DiscussRepository discussRepository;
 
+    /**
+     * Scheduled responsável por realizar o fechamento da sessão da pauta e fazer a contagem dos votos da mesma
+     */
+
     @Scheduled(fixedRate = 60000)
     public void scheduleChangeStatusOfSessions() {
 

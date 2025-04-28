@@ -5,6 +5,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ValidationUtil {
 
+    /**
+     * Essa função realiza a validação do CPF.
+     */
+
     public static boolean validateCPF(String cpf) {
 
             if (cpf.isEmpty()) return false;

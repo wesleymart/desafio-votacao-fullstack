@@ -15,16 +15,6 @@ public class AssociatedService {
     @Autowired
     private AssociatedRepository associatedRepository;
 
-    public Associated findAssociatedById(Integer id) {
-        try {
-            return associatedRepository.findById(id).orElse(null);
-        } catch (Exception e) {
-            logger.error("Error finding associated by id: {}", e.getMessage());
-            return null;
-        }
-
-    }
-
     public Associated save(Associated associated) {
         try {
             return associatedRepository.save(associated);

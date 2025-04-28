@@ -11,6 +11,9 @@ import com.desafiofullstask.votacao.repository.VoteRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Objects;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -31,7 +34,7 @@ class VotacaoApplicationTests {
 	@Test
 	public void testSaveAndRetrieveDiscuss() {
 		Session session = new Session();
-		session.setDuration(10L);
+		session.setDuration(10);
 		session = sessionRepository.save(session);
 
 		Discuss discuss = new Discuss();
@@ -51,7 +54,6 @@ class VotacaoApplicationTests {
 	@Test
 	public void createAssociated() {
 		Associated associated = new Associated();
-		associated.setName("João");
 		associated.setCpf("12345678900");
 		associated = associatedRepository.save(associated);
 		assertThat(associated.getId()).isNotNull();
@@ -65,7 +67,6 @@ class VotacaoApplicationTests {
 
 		Vote vote = new Vote();
         assert associated != null;
-        vote.setAssociatedCpf(associated.getId());
 		assert discuss != null;
 		vote.setDiscussId(discuss.getId());
 		vote.setVote("Sim");
@@ -86,10 +87,10 @@ class VotacaoApplicationTests {
 		assert associated != null;
 		assert discuss != null;
 
-		if(vote.getAssociatedCpf() == associated.getId()) {
+		if(Objects.equals(vote.getAssociatedCpf(), associated.getCpf())) {
 			System.out.println("Associado já votou");
 		} else {
-			vote.setAssociatedCpf(associated.getId());
+			vote.setAssociatedCpf(associated.getCpf());
 			vote.setDiscussId(discuss.getId());
 			vote.setVote("Sim");
 			vote = voteRepository.save(vote);

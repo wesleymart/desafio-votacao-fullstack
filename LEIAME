@@ -7,3 +7,12 @@ Para isso o recomendado é estar em um computador com sistema operacional Linux.
 Também será necessário ter instalado o docker na versão 27.0 e o docker-compose na versão 1.25.4.
 
 Se a versão do docker compose foi mais atualizada pode ser necessário executar o comando: "sudo docker-compose up -d" sem o "-" entre as palavras docker e compose 
+
+Teste de carga
+    - Se quiser fazer um teste de carga para ver o comportamento da sistema com 20 mil requisições, poderá executar o arquivo vote.sh
+    - Para isso basta executar no terminal bash vote.sh
+    OBS: Como o script não consegue gerar tantos CPFs validos, será necessário desativar o IF que é responsavél por realizar o calculo do CPF.
+
+Tarefa Bônus 3 - Versionamento da API
+    Como você versionaria a API da sua aplicação? Que estratégia usar?
+    Eu prefiro usar versionamento via URL (/v1/...), pois é a abordagem mais clara para consumidores, facilita backward compatibility e facilita o controle de rotas na aplicação
