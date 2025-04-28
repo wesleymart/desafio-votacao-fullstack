@@ -51,7 +51,7 @@ const AllDiscuss = () => {
         setLoading(true);
         try {
           await apiService.deleteDiscuss(id);
-          await fetchDiscusses(currentPage, 0);
+          await fetchDiscusses(currentPage -1, 0);
           message.success("Pauta deletada com sucesso");
         } catch (error) {
           message.error("Erro ao deletar a pauta");
@@ -70,8 +70,14 @@ const AllDiscuss = () => {
     }
 
     try {
-      await apiService.registerAssociate({ name: associateName, cpf: values.associateCpf.replace(/\D/g, "") });
-      message.success("Associado cadastrado com sucesso!");
+      await apiService.registerAssociate({ name: associateName, cpf: values.associateCpf.replace(/\D/g, "") }).then((response) => {
+        if(response === "ASSOCIATED_REGISTERED_SUCCESSFULLY"){
+        message.success("Associado cadastrado com sucesso!");
+        }else{
+          message.success("Associado já cadastrado!");
+        }
+      })
+      
 
       if (pendingVoteValues) {
         await continueVote(values.associateCpf);
@@ -135,7 +141,7 @@ const AllDiscuss = () => {
     try {
       await apiService.addDiscuss(newDiscuss);
       message.success("Pauta adicionada com sucesso");
-      await fetchDiscusses(currentPage, 0);
+      await fetchDiscusses(currentPage -1, 0);
       setIsModalVisible(false);
     } catch (error) {
       message.error("Erro ao adicionar a pauta");

@@ -15,9 +15,19 @@ public class AssociatedService {
     @Autowired
     private AssociatedRepository associatedRepository;
 
-    public Associated save(Associated associated) {
+    /**
+     * Método responsável por salvar um associado e verificar se já não existe, caso sim, ele não salva, para não ter duplicidade.
+     */
+    public String save(Associated associated) {
         try {
-            return associatedRepository.save(associated);
+            if(associatedRepository.findByCpf(associated.getCpf()) == null) {
+                associatedRepository.save(associated);
+                return "ASSOCIATED_REGISTERED_SUCCESSFULLY";
+            }else{
+                logger.info("Associado já cadastrado");
+                return "ASSOCIATED_ALREADY_REGISTERED";
+            }
+
         } catch (Exception e) {
             logger.error("Error saving associated: {}", e.getMessage());
             return null;

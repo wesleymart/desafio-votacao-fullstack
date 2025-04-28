@@ -12,6 +12,6 @@ import java.util.List;
 @Repository
 public interface SessionRepository extends JpaRepository<Session, Integer> {
 
-    @Query(value = "SELECT * FROM dp_session WHERE created_time <= :now AND status = 1", nativeQuery = true)
+    @Query("SELECT s FROM Session s WHERE s.createdTime <= :now AND s.status = 1")
     List<Session> findSessionsToChangeStatus(@Param("now") Timestamp now);
 }

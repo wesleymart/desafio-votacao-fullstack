@@ -9,9 +9,12 @@ Também será necessário ter instalado o docker na versão 27.0 e o docker-comp
 Se a versão do docker compose foi mais atualizada pode ser necessário executar o comando: "sudo docker-compose up -d" sem o "-" entre as palavras docker e compose 
 
 Teste de carga
-    - Se quiser fazer um teste de carga para ver o comportamento da sistema com 20 mil requisições, poderá executar o arquivo vote.sh
-    - Para isso basta executar no terminal bash vote.sh
-    OBS: Como o script não consegue gerar tantos CPFs validos, será necessário desativar o IF que é responsavél por realizar o calculo do CPF.
+    - Se quiser fazer um teste de carga para ver o comportamento da sistema com 400 requisições, poderá executar o arquivo vote.sh
+    - Para isso, edite o arquivo e modifique a linha 17: "  DISCUSS_ID=23" e altere o valor para o id da pauta que você criou, depois
+      dentro do projeto tem o arquivo insert associates, ele contem os inserts para criar todos os associados fake
+      então, basta executar no terminal bash vote.sh
+    - O arquivo cpfs.txt são todos cpfs fakes.
+
 
 Tarefa Bônus 3 - Versionamento da API
     Como você versionaria a API da sua aplicação? Que estratégia usar?

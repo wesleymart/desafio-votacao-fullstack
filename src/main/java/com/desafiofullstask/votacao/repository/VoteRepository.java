@@ -9,26 +9,10 @@ import java.util.Optional;
 
 public interface VoteRepository extends JpaRepository<Vote, Integer> {
 
-    @Query(value = """
-            SELECT
-                count(*)
-            FROM
-                dp_vote
-            WHERE
-                discuss_id = :discussId
-            AND
-                vote = 'sim';""", nativeQuery = true)
+    @Query("SELECT count(v) FROM Vote v WHERE v.discussId = :discussId AND v.vote = 'sim'")
     int countVotesYesByDiscussId(@Param("discussId") Integer discussId);
 
-    @Query(value = """
-            SELECT
-                count(*)
-            FROM
-                dp_vote
-            WHERE
-                discuss_id = :discussId
-            AND
-                vote = 'nao';""", nativeQuery = true)
+    @Query("SELECT count(v) FROM Vote v WHERE v.discussId = :discussId AND v.vote = 'não'")
     int countVotesNoByDiscussId(@Param("discussId") Integer discussId);
 
     Optional<Vote> findByAssociatedCpfAndDiscussId(String associatedCpf, Integer discussId);
